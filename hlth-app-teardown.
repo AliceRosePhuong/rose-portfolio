@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HLTH companion app — teardown & Today screen spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#E7EAEE;
+  --panel:#FFFFFF;
+  --ink:#151A21;
+  --ink-2:#4C5563;
+  --ink-3:#7C8695;
+  --rule:#D0D5DC;
+  --rule-2:#E3E6EB;
+  --flag:#93222B;
+  --flag-bg:#F6E9EA;
+  --ok:#0E6153;
+
+  --dev-surface:#0A0C10;
+  --dev-raised:#161A22;
+  --dev-line:#242A34;
+  --dev-text:#F1F4F8;
+  --dev-dim:#858F9E;
+  --dev-accent:#8D95F6;
+  --dev-warn:#D9A05B;
+
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* graph-paper ground, like a lab printout */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(to right,rgba(21,26,33,.045) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(21,26,33,.045) 1px,transparent 1px);
+  background-size:28px 28px;
+  z-index:0;
+}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  max-width:1080px;
+  margin:0 auto;
+  padding:0 24px 96px;
+}
+
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+/* ---------- type ---------- */
+.eyebrow{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+h1{
+  font-size:clamp(34px,5.4vw,58px);
+  line-height:1.02;
+  letter-spacing:-.032em;
+  font-weight:600;
+  margin:18px 0 0;
+  max-width:15ch;
+}
+h2{
+  font-size:clamp(21px,2.6vw,27px);
+  line-height:1.15;
+  letter-spacing:-.022em;
+  font-weight:600;
+  margin:0;
+}
+h3{
+  font-size:16px;
+  letter-spacing:-.008em;
+  font-weight:600;
+  margin:0 0 6px;
+}
+p{margin:0 0 14px;max-width:66ch}
+.lede{font-size:clamp(17px,2vw,19px);line-height:1.5;color:var(--ink-2);max-width:58ch}
+strong{font-weight:600}
+
+/* ---------- masthead ---------- */
+.masthead{padding:64px 0 40px;border-bottom:1.5px solid var(--ink)}
+.byline{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 28px;
+  margin-top:32px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-2);
+}
+.byline b{font-weight:500;color:var(--ink)}
+
+/* ---------- sections ---------- */
+section{padding:52px 0;border-bottom:1px solid var(--rule)}
+.sec-head{
+  display:grid;
+  grid-template-columns:56px 1fr;
+  gap:0 20px;
+  align-items:baseline;
+  margin-bottom:26px;
+}
+.sec-num{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:500;
+  color:var(--ink-3);
+  padding-top:6px;
+}
+.sec-body{grid-column:2}
+@media(max-width:640px){
+  .sec-head{grid-template-columns:1fr;gap:6px}
+  .sec-body{grid-column:1}
+}
+
+/* ---------- evidence rail ---------- */
+.rail{border-top:1px solid var(--rule)}
+.finding{
+  display:grid;
+  grid-template-columns:56px 1fr 200px;
+  gap:0 20px;
+  padding:22px 0;
+  border-bottom:1px solid var(--rule-2);
+  align-items:start;
+}
+.finding:last-child{border-bottom:0}
+.f-id{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-3);
+  padding-top:2px;
+}
+.f-main p{margin:0;color:var(--ink-2);font-size:15px;max-width:60ch}
+.f-main h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.tag{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:2px;
+  font-weight:500;
+  white-space:nowrap;
+}
+.tag.sev{background:var(--flag-bg);color:var(--flag)}
+.tag.brand{background:#EAEDF6;color:#2F3E7A}
+.f-src{
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.5;
+  color:var(--ink-3);
+  padding-top:3px;
+  border-left:1px solid var(--rule);
+  padding-left:16px;
+}
+@media(max-width:820px){
+  .finding{grid-template-columns:40px 1fr}
+  .f-src{grid-column:2;border-left:0;padding-left:0;margin-top:10px;border-top:1px dashed var(--rule);padding-top:8px}
+}
+
+/* ---------- spec panel ---------- */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--rule);
+  padding:26px 28px;
+  margin-bottom:16px;
+}
+.panel h3{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  font-weight:500;
+  margin-bottom:14px;
+}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.spec-grid{grid-template-columns:1fr}}
+
+ul.tight{margin:0;padding-left:0;list-style:none}
+ul.tight li{
+  padding:7px 0 7px 0;
+  border-bottom:1px solid var(--rule-2);
+  font-size:14.5px;
+  color:var(--ink-2);
+}
+ul.tight li:last-child{border-bottom:0}
+ul.tight li b{color:var(--ink);font-weight:600}
+code{
+  font-family:var(--mono);
+  font-size:12.5px;
+  background:#EDF0F3;
+  padding:1px 5px;
+  border-radius:2px;
+  color:var(--ink);
+}
+
+/* acceptance criteria */
+.ac{display:grid;grid-template-columns:56px 1fr;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--rule-2);font-size:14.5px;color:var(--ink-2)}
+.ac:last-child{border-bottom:0}
+.ac span{font-family:var(--mono);font-size:12px;color:var(--flag);font-weight:500}
+
+/* ---------- phones ---------- */
+.phones{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:26px;
+  margin-top:8px;
+}
+@media(max-width:900px){.phones{grid-template-columns:1fr;max-width:340px;margin-inline:auto}}
+
+.state-label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+.state-label b{color:var(--ink);font-weight:500}
+.state-note{font-size:13px;color:var(--ink-2);margin:12px 0 0;line-height:1.45}
+
+.phone{
+  background:var(--dev-surface);
+  border:1px solid #000;
+  border-radius:26px;
+  padding:14px 15px 18px;
+  color:var(--dev-text);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 18px 34px -20px rgba(10,14,20,.5);
+  font-size:14px;
+}
+.status{
+  display:flex;
+  justify-content:space-between;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--dev-dim);
+  padding:2px 4px 14px;
+  letter-spacing:.02em;
+}
+.p-date{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--dev-dim);
+  padding:0 4px;
+}
+.p-kicker{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--dev-dim);
+  padding:20px 4px 4px;
+}
+.score{
+  font-size:66px;
+  line-height:.94;
+  font-weight:600;
+  letter-spacing:-.045em;
+  padding:0 4px;
+}
+.score.dim{color:var(--dev-dim);opacity:.55}
+.verdict{padding:6px 4px 0;font-size:15px;font-weight:500;letter-spacing:-.01em}
+.verdict.warn{color:var(--dev-warn)}
+.driver{
+  padding:14px 4px 0;
+  font-size:13.5px;
+  line-height:1.45;
+  color:#C6CDD8;
+}
+.driver em{font-style:normal;color:var(--dev-text);font-weight:500}
+.link{
+  display:inline-block;
+  margin-top:9px;
+  font-size:12.5px;
+  color:var(--dev-accent);
+  border-bottom:1px solid rgba(141,149,246,.35);
+  padding-bottom:1px;
+}
+.action{
+  margin:16px 4px 0;
+  padding:12px 13px;
+  background:var(--dev-raised);
+  border-left:2px solid var(--dev-accent);
+  font-size:13px;
+  line-height:1.45;
+  color:#D6DBE4;
+  border-radius:0 4px 4px 0;
+}
+
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--dev-line);margin:18px 0 0;border-top:1px solid var(--dev-line);border-bottom:1px solid var(--dev-line)}
+.tile{background:var(--dev-surface);padding:12px 9px}
+.tile .t-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dev-dim)}
+.tile .t-v{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-top:5px}
+.tile .t-d{font-family:var(--mono);font-size:10.5px;margin-top:3px;color:var(--dev-dim)}
+.tile.muted .t-v{color:var(--dev-dim);opacity:.5}
+
+.foot-meta{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--dev-dim);
+  padding:14px 4px 0;
+  line-height:1.5;
+}
+
+/* baseline state bits */
+.prog{display:flex;gap:5px;padding:12px 4px 0}
+.prog i{height:3px;flex:1;background:var(--dev-line);border-radius:2px}
+.prog i.on{background:var(--dev-accent)}
+.collected{margin:18px 0 0;border-top:1px solid var(--dev-line)}
+.collected div{display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--dev-line);font-size:12.5px;color:#C6CDD8}
+.collected div span{font-family:var(--mono);font-size:11.5px;color:var(--dev-dim)}
+.check{margin:16px 4px 0;font-size:12.5px;color:#C6CDD8;line-height:1.6}
+.check b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dev-dim);margin-bottom:7px;font-weight:500}
+
+/* ---------- metrics ---------- */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:760px){.metrics{grid-template-columns:1fr}}
+.metric{background:var(--panel);border:1px solid var(--rule);padding:20px}
+.metric .m-l{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.metric .m-v{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+.metric p{font-size:13.5px;color:var(--ink-2);margin:0}
+
+.events{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:2}
+
+/* ---------- close ---------- */
+.close{padding:52px 0 0;border-bottom:0}
+.close p{font-size:17px;line-height:1.55;max-width:58ch}
+
+.disclaimer{
+  margin-top:40px;
+  padding-top:18px;
+  border-top:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.7;
+  color:var(--ink-3);
+  max-width:70ch;
+}
+
+/* motion */
+.rv{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Unsolicited product review · 13 August 2026</div>
+    <h1>The HLTH companion app is someone else&rsquo;s app.</h1>
+    <p class="lede" style="margin-top:22px">A teardown of what ships today, and a written spec plus mockup for the one screen I&rsquo;d rebuild first.</p>
+    <div class="byline">
+      <div><b>Prepared by</b> Rose Nguyen</div>
+      <div><b>For</b> HLTH · Senior Product Manager</div>
+      <div><b>Method</b> Store listing + 5.3k public reviews</div>
+    </div>
+  </header>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div class="sec-body">
+        <h2>The gap between the promise and the download</h2>
+      </div>
+    </div>
+    <div class="sec-head">
+      <div class="sec-num"></div>
+      <div class="sec-body">
+        <p>The HLTH homepage sells a screenless band, so the entire product experience lives in software. It promises effortless understanding, total access to your data, and clarity over noise.</p>
+        <p>The app link on that page points to <strong>QWatch Pro</strong> &mdash; a white-label companion app published by a third party, shared across unrelated devices, rated <strong>3.1 out of 5</strong> from roughly 5,300 ratings. A customer who has just paid for a premium longevity product lands there on day one.</p>
+        <p style="color:var(--ink-2)">That is the whole thesis of this document. Everything below is evidence for it, and then one concrete step out of it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div class="sec-body">
+        <h2>Five findings, ranked by what they cost you</h2>
+        <p style="color:var(--ink-2);font-size:15px;margin-top:8px">Ranked by revenue impact, not by how easy they are to fix. All sourced from public store listings and reviews.</p>
+      </div>
+    </div>
+
+    <div class="rail">
+
+      <div class="finding">
+        <div class="f-id">F1</div>
+        <div class="f-main">
+          <h3>The app carries no brand equity <span class="tag brand">Strategic</span></h3>
+          <p>The listing describes support for unrelated watch models and is published under an individual developer account. HLTH buyers share an app, a rating, and a review page with cheap trackers the brand has nothing to do with. Every acquisition dollar spent on the storefront hands the customer off to a 3.1&#8203;-star experience nobody at HLTH controls.</p>
+        </div>
+        <div class="f-src">Google&nbsp;Play &amp; App&nbsp;Store listings.<br>1.7M downloads, 3.08&ndash;3.1&#9733;, 5.3k ratings. Listing names other supported models.</div>
+      </div>
+
+      <div class="finding">
+        <div class="f-id">F2</div>
+        <div class="f-main">
+          <h3>Sleep is the headline feature and the top complaint <span class="tag sev">Severity 1</span></h3>
+          <p>Reviewers repeatedly report sleep failing to record at all, sometimes for weeks. Naps are filed in a separate category that never rolls into a nightly total, and the app records only one sleep session per calendar day, so anyone who wakes and returns to bed loses the second half of their night. Your homepage opens by promising people will see how well they actually rest.</p>
+        </div>
+        <div class="f-src">Google&nbsp;Play and App&nbsp;Store reviews, 2025&ndash;2026. Independent review aggregation flags unreliable sleep recording as a recurring theme.</div>
+      </div>
+
+      <div class="finding">
+        <div class="f-id">F3</div>
+        <div class="f-main">
+          <h3>The numbers arrive with no interpretation <span class="tag sev">Severity 1</span></h3>
+          <p>One reviewer says plainly that the stress metric does not appear to mean anything. That is the whole problem in a sentence: the app renders values but never says why one moved or what to do differently. A readout is not a product. This is also the cheapest defect on this list to fix, because it is a design and copy problem rather than a firmware one.</p>
+        </div>
+        <div class="f-src">Google&nbsp;Play review, 2025. Same reviewer rates hardware accuracy positively &mdash; the complaint is about meaning, not sensors.</div>
+      </div>
+
+      <div class="finding">
+        <div class="f-id">F4</div>
+        <div class="f-main">
+          <h3>Data ownership is promised and then withheld <span class="tag sev">Severity 2</span></h3>
+          <p>HRV and blood pressure are measured but cannot be exported to Apple Health. There is no Health Connect or Samsung Health path since Google Fit was deprecated. The listing requests dozens of permissions and its privacy disclosures are unverified. The storefront sells total access to your health data; the app does not deliver it.</p>
+        </div>
+        <div class="f-src">App&nbsp;Store review requesting HRV/BP export, 2026. Play listing permission count via AppBrain. Apple notes developer privacy answers are unverified.</div>
+      </div>
+
+      <div class="finding">
+        <div class="f-id">F5</div>
+        <div class="f-main">
+          <h3>History has been lost during updates <span class="tag sev">Severity 2</span></h3>
+          <p>At least one reviewer reports blood pressure and measurement history disappearing after an app update, and others report settings silently resetting. For a product sold on longevity, accumulated history <em>is</em> the value. Losing it does not degrade the experience, it deletes the reason to keep wearing the band.</p>
+        </div>
+        <div class="f-src">Google&nbsp;Play review following an April update. Settings-reset reports appear across multiple aggregators.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div class="sec-body">
+        <h2>Why I would rebuild the Today screen first</h2>
+      </div>
+    </div>
+    <div class="sec-head">
+      <div class="sec-num"></div>
+      <div class="sec-body">
+        <p>F1 is a nine-month program. F2 depends on firmware and on whoever owns the sync protocol. Neither can be the first release.</p>
+        <p><strong>F3 can ship inside one cycle and it moves the number that matters.</strong> A user decides whether to keep wearing the band somewhere in the first two weeks, and that decision is made on the first screen they open each morning. If that screen shows a grid of numbers with no hierarchy, there is nothing to come back for.</p>
+        <p>So: one screen, one number, one reason it moved, one thing to do. Below is the spec and the mockup, including the two states that are usually skipped and that most of the first fourteen days actually live in.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div class="sec-body">
+        <h2>Screen spec &mdash; Today</h2>
+      </div>
+    </div>
+    <div class="sec-head">
+      <div class="sec-num"></div>
+      <div class="sec-body">
+
+        <div class="panel">
+          <h3>Purpose</h3>
+          <p style="margin:0;font-size:15.5px">In one glance, tell the user whether their body is ready for today and why. If they cannot explain in their own words why the number moved, the screen has failed regardless of sensor accuracy.</p>
+        </div>
+
+        <div class="spec-grid">
+          <div class="panel">
+            <h3>Data on screen</h3>
+            <ul class="tight">
+              <li><b>Readiness</b> composite of sleep duration, sleep quality, resting HR delta, HRV delta</li>
+              <li><b>Primary driver</b> the single input that moved furthest from the 14-day baseline</li>
+              <li><b>One action</b> derived from the driver, never generic</li>
+              <li><b>Three tiles</b> sleep, resting HR, HRV &mdash; each shown as a delta, never as a bare absolute</li>
+              <li><b>Band state</b> wear duration, last sync, battery</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>States</h3>
+            <ul class="tight">
+              <li><b>S1 Baseline building</b> fewer than 3 nights of data</li>
+              <li><b>S2 Low confidence</b> worn under 4h, or poor signal quality</li>
+              <li><b>S3 Nominal</b> full data, confident score</li>
+              <li><b>S4 Stale</b> no sync in over 24h</li>
+              <li><b>S5 Multi-session night</b> naps and second sleeps roll into one total</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Acceptance criteria</h3>
+          <div class="ac"><span>AC1</span><div>If <code>nights_with_data &lt; 3</code>, no readiness score renders. S1 shows instead, with the count of nights remaining and the date the first score arrives.</div></div>
+          <div class="ac"><span>AC2</span><div>If <code>wear_duration &lt; 4h</code> OR <code>signal_quality = low</code>, the score renders visibly de-emphasised with a confidence label and a tap target to a plain-language explanation.</div></div>
+          <div class="ac"><span>AC3</span><div>The driver line names exactly one metric and its delta against the 14-day baseline. It never names two, and never renders without a delta.</div></div>
+          <div class="ac"><span>AC4</span><div>All sleep sessions inside one 24-hour window sum to a single total. Naps appear as segments within that total, never as a separate figure. Resolves F2.</div></div>
+          <div class="ac"><span>AC5</span><div>No copy on this screen states or implies a clinical condition. Every value is described relative to the user&rsquo;s own baseline, never to a population reference range.</div></div>
+          <div class="ac"><span>AC6</span><div>If <code>last_sync &gt; 24h</code>, last known values render with a visible timestamp. The screen never shows zeros in place of missing data.</div></div>
+          <div class="ac"><span>AC7</span><div>Every metric shown is exportable to Apple Health and Health Connect. Nothing on this screen is display-only. Resolves F4.</div></div>
+          <div class="ac"><span>AC8</span><div>Historical data survives version upgrade. Migration is covered by an automated test that seeds prior-version data and asserts full retention. Resolves F5.</div></div>
+        </div>
+
+        <div class="panel">
+          <h3>Out of scope for this release</h3>
+          <p style="margin:0;font-size:15px;color:var(--ink-2)">Trends and history views, workout logging, social or comparison features, notification redesign, watch faces. Named here so they do not arrive in week three.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div class="sec-body">
+        <h2>Mockup &mdash; the three states that matter</h2>
+        <p style="color:var(--ink-2);font-size:15px;margin-top:8px">Most specs mock the happy path. A new user spends their first three days in S1 and a meaningful share of nights in S2, so those are the states that decide whether the band stays on the wrist.</p>
+      </div>
+    </div>
+
+    <div class="phones">
+
+      <!-- S1 -->
+      <div>
+        <div class="state-label"><b>S1 · Baseline building</b><span>Day 2</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9866;</span></div>
+          <div class="p-date">Thursday, 13 August</div>
+
+          <div class="p-kicker">Learning your normal</div>
+          <div class="score">2<span style="font-size:26px;color:var(--dev-dim);letter-spacing:0"> / 3 nights</span></div>
+          <div class="prog"><i class="on"></i><i class="on"></i><i></i></div>
+
+          <div class="driver" style="padding-top:18px">
+            One more night and we&rsquo;ll know what rested looks like <em>for you</em>. Your first readiness score arrives Friday morning.
+          </div>
+
+          <div class="collected">
+            <div>Sleep<span>2 nights</span></div>
+            <div>Resting heart rate<span>41 readings</span></div>
+            <div>HRV<span>18 readings</span></div>
+          </div>
+
+          <div class="check">
+            <b>Tonight</b>
+            Wear the band to bed. Snug, one finger above the wrist bone &mdash; loose is the main reason a night gets thrown out.
+          </div>
+
+          <div class="foot-meta">Band worn 14h 20m &middot; synced 6 min ago &middot; 26 days battery</div>
+        </div>
+        <p class="state-note">No score is invented from two nights. The screen still has a job: show progress, and teach the one behaviour that protects data quality.</p>
+      </div>
+
+      <!-- S3 -->
+      <div>
+        <div class="state-label"><b>S3 · Nominal</b><span>Day 21</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9866;</span></div>
+          <div class="p-date">Thursday, 13 August</div>
+
+          <div class="p-kicker">Readiness</div>
+          <div class="score">78</div>
+          <div class="verdict">Ready for a normal day</div>
+
+          <div class="driver">
+            Mostly because you slept <em>6h 12m</em>, about an hour under your average.
+            <a class="link" href="#" onclick="return false">How this is calculated</a>
+          </div>
+
+          <div class="action">
+            Keep the hard session for the afternoon. Your resting heart rate usually settles by midday.
+          </div>
+
+          <div class="tiles">
+            <div class="tile"><div class="t-l">Sleep</div><div class="t-v">6h 12m</div><div class="t-d">&darr; 58m</div></div>
+            <div class="tile"><div class="t-l">Rest HR</div><div class="t-v">58</div><div class="t-d">&uarr; 3 bpm</div></div>
+            <div class="tile"><div class="t-l">HRV</div><div class="t-v">42</div><div class="t-d">&darr; 4 ms</div></div>
+          </div>
+
+          <div class="foot-meta">Includes a 40m nap logged at 15:10 &middot; synced 6 min ago</div>
+        </div>
+        <p class="state-note">One number, one driver, one action. Tiles carry deltas rather than bare values, because 58 bpm means nothing without the user&rsquo;s own baseline beside it.</p>
+      </div>
+
+      <!-- S2 -->
+      <div>
+        <div class="state-label"><b>S2 · Low confidence</b><span>Day 24</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9866;</span></div>
+          <div class="p-date">Sunday, 16 August</div>
+
+          <div class="p-kicker">Readiness</div>
+          <div class="score dim">64</div>
+          <div class="verdict warn">Thin reading</div>
+
+          <div class="driver">
+            The band was worn <em>2h 50m</em> last night, so there isn&rsquo;t enough of the night to be confident. We&rsquo;ve left the number in, but wouldn&rsquo;t plan around it.
+            <a class="link" href="#" onclick="return false">What makes a clean reading</a>
+          </div>
+
+          <div class="tiles">
+            <div class="tile"><div class="t-l">Sleep</div><div class="t-v">2h 50m</div><div class="t-d">partial</div></div>
+            <div class="tile"><div class="t-l">Rest HR</div><div class="t-v">61</div><div class="t-d">&uarr; 6 bpm</div></div>
+            <div class="tile muted"><div class="t-l">HRV</div><div class="t-v">&mdash;</div><div class="t-d">not enough data</div></div>
+          </div>
+
+          <div class="foot-meta">Band worn 2h 50m &middot; synced 11h ago &middot; 24 days battery</div>
+        </div>
+        <p class="state-note">The alternative is silently publishing a confident 64 from three hours of data. Do that twice and the user stops believing any number the app shows.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div class="sec-body">
+        <h2>How I&rsquo;d know whether it worked</h2>
+      </div>
+    </div>
+    <div class="sec-head">
+      <div class="sec-num"></div>
+      <div class="sec-body">
+        <div class="metrics">
+          <div class="metric">
+            <div class="m-l">North star</div>
+            <div class="m-v">Day-30 wear rate</div>
+            <p>Sits underneath referrals, accessory attach, repeat purchase and refunds. If the band comes off, nothing downstream works.</p>
+          </div>
+          <div class="metric">
+            <div class="m-l">Release target</div>
+            <div class="m-v">Day-7 return rate</div>
+            <p>The screen&rsquo;s only job is to earn tomorrow morning. Measured against the pre-release cohort, not against a guess.</p>
+          </div>
+          <div class="metric">
+            <div class="m-l">Counter metric</div>
+            <div class="m-v">Refund rate</div>
+            <p>Guards against buying engagement with claims the sensor cannot support. Watched weekly alongside accuracy complaints.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3>Instrumentation to define with engineering before build</h3>
+          <div class="events">
+            today_viewed &nbsp;{ state: s1 | s2 | s3 | s4 }<br>
+            readiness_rendered &nbsp;{ score, confidence, nights_of_data }<br>
+            driver_explanation_opened<br>
+            action_tapped<br>
+            confidence_note_opened &nbsp;&larr; leading indicator for trust<br>
+            <span style="color:var(--ink-3)">Funnel:</span> install &rarr; pair &rarr; first full night &rarr; day-7 open &rarr; day-30 wear
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="close rv">
+    <div class="sec-head">
+      <div class="sec-num">&mdash;</div>
+      <div class="sec-body">
+        <p>I put this together before we spoke because the job description says builder rather than strategist, and that seemed like the more useful way to show it.</p>
+        <p style="color:var(--ink-2)">Happy to be wrong on any of it. Most of what I&rsquo;d want to know next is internal: what the contract with the current app publisher allows, whether the band can be read directly, and what analytics exist today.</p>
+        <div class="disclaimer">
+          Prepared independently from public sources on 13 August 2026 &mdash; Google Play and App Store listings and reviews, and public review aggregators. No confidential HLTH material was used. Sensor values in the mockup are illustrative. All product copy shown avoids clinical claims, consistent with HLTH&rsquo;s stated position that the band is a wellness device and not a medical device.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    els.forEach(function(e){e.classList.add('in')});
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  },{rootMargin:'0px 0px -8% 0px',threshold:.05});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>
